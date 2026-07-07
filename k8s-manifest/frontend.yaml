@@ -15,7 +15,7 @@ spec:
 containers:
 - name: frontend
 # Tên image này sẽ do Jenkins tự động điền/cập nhật
-image: ghcr.io/oppathang/my-app/phongthuy-frontend:latest
+image: ghcr.io/oppathang/my-app/phongthuy-frontend:v1
 imagePullPolicy: Always
 
 ports:
