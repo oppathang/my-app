@@ -8,7 +8,7 @@ pipeline {
         // Tạo mã phiên bản dựa vào ID của lần chạy Jenkins (VD: v1, v2, v3...)
         IMAGE_TAG = "v${env.BUILD_ID}" 
         // Khai báo credential GitHub (Bạn cần tạo một Secret Text trên Jenkins chứa GitHub Token)
-        GITHUB_TOKEN = credentials('github-token-secret-id') 
+        GITHUB_TOKEN = credentials('github-token') 
     }
 
     stages {
