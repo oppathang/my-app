@@ -1,0 +1,33 @@
+name: Build Phong Thuy Backend
+
+# Kịch bản này sẽ tự động chạy mỗi khi bạn "Commit changes" (Push) vào nhánh main
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
+    steps:
+    # Bước 1: Lấy code từ repo của bạn ra để xử lý
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Bước 2: Đăng nhập vào kho chứa ảnh của GitHub (GitHub Container Registry)
+    # Hệ thống sử dụng luôn tài khoản GitHub của bạn để cấp quyền
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    # Bước 3: Tiến hành đóng gói code thành Docker Image dựa theo file Dockerfile bạn đã tạo
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: ./backend
+        push: true
+        # Tên của hộp bento sau khi đóng gói sẽ dạng: ghcr.io/ten-github-cua-ban/ten-repo/phongthuy-backend:latest
+        tags: ghcr.io/${{ github.repository }}/phongthuy-backend:latest
