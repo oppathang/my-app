@@ -26,7 +26,7 @@ pipeline {
     environment {
         IMAGE_NAME = "ghcr.io/oppathang/my-app/phongthuy-backend"
         IMAGE_TAG = "v${env.BUILD_ID}" 
-        GITHUB_TOKEN = credentials('github-token-secret-id') 
+        GITHUB_TOKEN = credentials('ghcr-secret-token') 
     }
 
     stages {
