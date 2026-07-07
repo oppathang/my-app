@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phongthuy-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        # Chỗ này Jenkins sẽ tự động sửa mỗi khi có bản mới
+        image: ghcr.io/oppathang/my-app/phongthuy-backend:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        - name: KET_NOI_DB
+          value: "db-service:3306"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+spec:
+  type: NodePort # <--- Chuyển thành NodePort
+  selector:
+    app: backend
+  ports:
+  - port: 80
+    targetPort: 8080
+    nodePort: 30080 # <--- Cổng Public để bạn truy cập từ IP máy chủ
