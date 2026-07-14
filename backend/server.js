@@ -24,6 +24,6 @@ bad_directions: ["Tây Nam (Tuyệt Mệnh)", "Tây (Họa Hại)"]
 
 // Mở cổng 8080 cho K8s gọi vào
 const PORT = 8080;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
 console.log(`Backend App Phong Thuy dang chay tai port ${PORT}`);
 });
