@@ -17,7 +17,7 @@ spec:
       - name: ghcr-login-secret
       containers:
       - name: frontend
-        image: ghcr.io/oppathang/my-app/phongthuy-frontend:v3
+        image: ghcr.io/oppathang/my-app/phongthuy-frontend:v5
         imagePullPolicy: Always
         ports:
         - containerPort: 80
