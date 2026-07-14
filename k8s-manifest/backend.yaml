@@ -15,7 +15,7 @@ spec:
       containers:
       - name: backend
         # Chỗ này Jenkins sẽ tự động sửa mỗi khi có bản mới
-        image: ghcr.io/oppathang/my-app/phongthuy-backend:v10
+        image: ghcr.io/oppathang/my-app/phongthuy-backend:v12
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
