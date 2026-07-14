@@ -57,7 +57,8 @@ pipeline {
 
         stage('Update K8s Manifest') {
             steps {
-                withCredentials([string(credentialsId: 'github-token-secret-id', variable: 'GITHUB_TOKEN')]) {
+                // Sửa lại cách gọi credentials cho đúng kiểu 'Username with password'
+                withCredentials([usernamePassword(credentialsId: 'github-token-secret-id', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
                     sh '''
                         git config --global user.email "jenkins@example.com"
                         git config --global user.name "Jenkins Build"
@@ -65,10 +66,13 @@ pipeline {
                         # Sửa version trong file yaml
                         sed -i "s|image: $IMAGE_NAME:.*|image: $IMAGE_NAME:$TAG|g" k8s-manifest/frontend.yaml
                         
+                        # Cập nhật đường link git để dùng username và password (token)
+                        git remote set-url origin https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/oppathang/my-app.git
+                        
                         # Commit và Push lên GitHub
                         git add k8s-manifest/frontend.yaml
                         git commit -m "Update Frontend Image to $TAG"
-                        git push https://${GITHUB_TOKEN}@github.com/oppathang/my-app.git HEAD:main
+                        git push origin HEAD:main
                     '''
                 }
             }
