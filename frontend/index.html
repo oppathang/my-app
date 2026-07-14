@@ -51,47 +51,46 @@ button:hover { background-color: #1557b0; }
 </div>
 </div>
 <script>
-async function calculateFengShui() {
-const year = document.getElementById('birthYear').value;
-const gender = document.getElementById('gender').value;
-const resultBox = document.getElementById('resultBox');
-const errorMsg = document.getElementById('errorMsg');
-resultBox.style.display = 'none';
-errorMsg.style.display = 'none';
-if (!year) {
+        async function calculateFengShui() {
+            const year = document.getElementById('birthYear').value;
+            const gender = document.getElementById('gender').value;
+            const resultBox = document.getElementById('resultBox');
+            const errorMsg = document.getElementById('errorMsg');
+            
+            resultBox.style.display = 'none';
+            errorMsg.style.display = 'none';
 
-errorMsg.innerText = 'Vui lòng nhập năm sinh!';
-errorMsg.style.display = 'block';
-return;
-}
-// LƯU Ý QUAN TRỌNG: Sửa dòng dưới đây thành IP máy chủ K8s của bạn
-const apiUrl = 'http://172.25.57.55:30080/api/v1/calculate';
-try {
-const response = await fetch(apiUrl, {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ birthYear: parseInt(year), gender: gender })
-});
-const data = await response.json();
-if(data.status === 'success') {
-document.getElementById('resElement').innerText = data.data.element;
-document.getElementById('resKua').innerText = data.data.kua;
-document.getElementById('resGood').innerText =
+            if (!year) {
+                errorMsg.innerText = 'Vui lòng nhập năm sinh!';
+                errorMsg.style.display = 'block';
+                return;
+            }
 
-data.data.good_directions.join(', ');
+            // Dòng này rất dễ lỗi cú pháp nếu thiếu dấu nháy đơn (' ')
+            const apiUrl = 'http://<IP_PUBLIC_CỦA_BẠN>:30080/api/v1/calculate'; 
 
-document.getElementById('resBad').innerText = data.data.bad_directions.join(',
-
-');
-
-resultBox.style.display = 'block';
-}
-} catch (error) {
-errorMsg.innerText = 'Không thể kết nối đến hệ thống Backend.';
-errorMsg.style.display = 'block';
-console.error('Error:', error);
-}
-}
-</script>
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ birthYear: parseInt(year), gender: gender })
+                });
+                
+                const data = await response.json();
+                
+                if(data.status === 'success') {
+                    document.getElementById('resElement').innerText = data.data.element;
+                    document.getElementById('resKua').innerText = data.data.kua;
+                    document.getElementById('resGood').innerText = data.data.good_directions.join(', ');
+                    document.getElementById('resBad').innerText = data.data.bad_directions.join(', ');
+                    resultBox.style.display = 'block';
+                }
+            } catch (error) {
+                errorMsg.innerText = 'Không thể kết nối đến hệ thống Backend.';
+                errorMsg.style.display = 'block';
+                console.error('Error:', error);
+            }
+        }
+    </script>
 </body>
 </html>
