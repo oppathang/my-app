@@ -19,7 +19,7 @@ spec:
       # -------------------------------
       containers:
       - name: frontend
-        image: ghcr.io/oppathang/my-app/phongthuy-frontend:v3
+        image: ghcr.io/oppathang/my-app/phongthuy-frontend:v4
         imagePullPolicy: Always
         ports:
         - containerPort: 80
