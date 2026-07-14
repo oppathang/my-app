@@ -6,30 +6,32 @@ pipeline {
             kind: Pod
             spec:
               containers:
-              - name: docker
-                image: docker:20.10
+              # --- Thay thế Docker bằng Kaniko ---
+              - name: kaniko
+                image: gcr.io/kaniko-project/executor:debug
                 command:
-                - cat
-                tty: true
-                securityContext:
-                  privileged: true
+                - sleep
+                args:
+                - 9999999
                 volumeMounts:
-                - mountPath: /var/run/docker.sock
-                  name: docker-sock
+                - name: kaniko-secret
+                  mountPath: /kaniko/.docker
               volumes:
-              - name: docker-sock
-                hostPath:
-                  path: /var/run/docker.sock
+              - name: kaniko-secret
+                secret:
+                  secretName: ghcr-secret
+                  items:
+                    - key: .dockerconfigjson
+                      path: config.json
             '''
         }
     }
-    
+
     environment {
-        // Trỏ vào tên image của giao diện
+        // Tên image (không kèm tag v...)
         IMAGE_NAME = "ghcr.io/oppathang/my-app/phongthuy-frontend"
-        IMAGE_TAG = "v${env.BUILD_ID}" 
-        // Vẫn dùng lại chìa khóa hôm trước
-        GITHUB_TOKEN = credentials('ghcr-secret-token') 
+        // Dùng số hiệu bản build làm version
+        TAG = "v${env.BUILD_ID}"
     }
 
     stages {
@@ -39,33 +41,35 @@ pipeline {
             }
         }
 
-        stage('Build & Push Frontend Image') {
+        stage('Build & Push Frontend Image (Kaniko)') {
             steps {
-                container('docker') {
-                    script {
-                        sh 'echo $GITHUB_TOKEN | docker login ghcr.io -u oppathang --password-stdin'
-                        // Chỉ build thư mục frontend
-                        sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ./frontend"
-                        sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
-                    }
+                container('kaniko') {
+                    // Dùng Kaniko để build và đẩy thẳng lên kho
+                    sh '''
+                        /kaniko/executor \
+                        --context `pwd`/frontend \
+                        --dockerfile `pwd`/frontend/Dockerfile \
+                        --destination $IMAGE_NAME:$TAG
+                    '''
                 }
             }
         }
 
         stage('Update K8s Manifest') {
             steps {
-                script {
-                    // Cập nhật thẻ phiên bản vào file frontend.yaml
-                    sh """
-                        sed -i 's|image: ${IMAGE_NAME}:.*|image: ${IMAGE_NAME}:${IMAGE_TAG}|g' k8s-manifest/frontend.yaml
+                withCredentials([string(credentialsId: 'github-token-secret-id', variable: 'GITHUB_TOKEN')]) {
+                    sh '''
+                        git config --global user.email "jenkins@example.com"
+                        git config --global user.name "Jenkins Build"
                         
-                        git config user.email "jenkins@example.com"
-                        git config user.name "Jenkins CI"
+                        # Sửa version trong file yaml
+                        sed -i "s|image: $IMAGE_NAME:.*|image: $IMAGE_NAME:$TAG|g" k8s-manifest/frontend.yaml
+                        
+                        # Commit và Push lên GitHub
                         git add k8s-manifest/frontend.yaml
-                        git commit -m "Jenkins cap nhat Frontend image tag thanh ${IMAGE_TAG}"
-                        
-                        git push https://oppathang:${GITHUB_TOKEN}@github.com/oppathang/my-app.git HEAD:main
-                    """
+                        git commit -m "Update Frontend Image to $TAG"
+                        git push https://${GITHUB_TOKEN}@github.com/oppathang/my-app.git HEAD:main
+                    '''
                 }
             }
         }
